@@ -89,9 +89,6 @@
 
 <!-- Main Section -->
 <div class="main">
-    <nav class="navbar">
-        <div class="logo">Loxecutivo</div>
-    </nav>
 
     <section class="content">
         <div class="dashboard-grid">
@@ -111,9 +108,9 @@
                         th:classappend="${viagemSelecionada != null && viagemSelecionada.id == viagem.id} ? 'active' : ''">
 
                         <a class="item-link" th:href="@{/{idEv}/{idVeiculo}(idEv=${evento.id}, idVeiculo=${viagem.id})}">
-                            <p>Veículo: <strong><span th:text="${viagem.idVeiculo}"></span></strong></p>
+                            <p>Veículo: <strong><span th:text="${viagem.idVeiculo}"></span></strong>
                             <br>
-                            <p>Motorista: <strong><span th:text="${viagem.idMotorista.nome + ' ' + viagem.idMotorista.sobrenome}"></span></strong></p>
+                            Motorista: <strong><span th:text="${viagem.idMotorista.nome + ' ' + viagem.idMotorista.sobrenome}"></span></strong></p>
                         </a>
 
                         <div class="item-actions">
@@ -168,7 +165,7 @@
                 <div class="card-header">
                     <h3>Transporte e Rota</h3>
                     <div class="header-actions">
-                        <button type="button" onclick="openModal('modalViagem')" class="btn-sm btn-add" title="Editar Rota">
+                        <button type="button" onclick="openModal('modalEditarViagem')" class="btn-sm btn-add" title="Editar Rota" th:if="${viagemSelecionada != null}">
                             <i class="fas fa-edit"></i>
                         </button>
                     </div>
@@ -199,14 +196,12 @@
                         <h4 class="sub-title">🚐 Veículo Escalado</h4>
                         <div th:if="${veiculoSelecionado != null}" class="info-box">
                             <div class="info-header">
-                                <span class="badge" th:text="${veiculoSelecionado.idPlaca}"></span>
-                                <strong th:text="${veiculoSelecionado.modelo}"></strong>
+                                Placa:
+                                    <span class="badge" th:text="${veiculoSelecionado.idPlaca}"></span>
+                                    <br>
+                                <strong th:text="${veiculoSelecionado.marca + ' - ' + veiculoSelecionado.modelo}"></strong>
                             </div>
-                            <p><small th:text="${veiculoSelecionado.marca + ' - ' + veiculoSelecionado.cor}"></small></p>
-                        </div>
-                        <div th:if="${veiculoSelecionado == null}" class="empty-msg-box">
-                            <p>Nenhum veículo vinculado.</p>
-                            <button type="button" onclick="openModal('modalVincularVeiculo')" class="link-action">Vincular agora</button>
+                            <p><small th:text="${veiculoSelecionado.cor}"></small></p>
                         </div>
                     </div>
 
@@ -269,7 +264,39 @@
 
                 <div class="form-group">
                     <label>UF:</label>
-                    <input type="text" th:field="*{localDeOrigem.uf}" class="form-control" maxlength="2" placeholder="Ex: SP" required>
+                    <select th:field="*{localDeOrigem.uf}" class="form-control" required>
+
+                        <option value="">Selecione um estado</option>
+
+                        <option value="AC">Acre</option>
+                        <option value="AL">Alagoas</option>
+                        <option value="AP">Amapá</option>
+                        <option value="AM">Amazonas</option>
+                        <option value="BA">Bahia</option>
+                        <option value="CE">Ceará</option>
+                        <option value="DF">Distrito Federal</option>
+                        <option value="ES">Espírito Santo</option>
+                        <option value="GO">Goiás</option>
+                        <option value="MA">Maranhão</option>
+                        <option value="MT">Mato Grosso</option>
+                        <option value="MS">Mato Grosso do Sul</option>
+                        <option value="MG">Minas Gerais</option>
+                        <option value="PA">Pará</option>
+                        <option value="PB">Paraíba</option>
+                        <option value="PR">Paraná</option>
+                        <option value="PE">Pernambuco</option>
+                        <option value="PI">Piauí</option>
+                        <option value="RJ">Rio de Janeiro</option>
+                        <option value="RN">Rio Grande do Norte</option>
+                        <option value="RS">Rio Grande do Sul</option>
+                        <option value="RO">Rondônia</option>
+                        <option value="RR">Roraima</option>
+                        <option value="SC">Santa Catarina</option>
+                        <option value="SP">São Paulo</option>
+                        <option value="SE">Sergipe</option>
+                        <option value="TO">Tocantins</option>
+
+                    </select>
                 </div>
             </div>
 
@@ -301,7 +328,39 @@
 
                 <div class="form-group">
                     <label>UF:</label>
-                    <input type="text" th:field="*{localDeDestino.uf}" class="form-control" maxlength="2" placeholder="Ex: SP" required>
+                    <select th:field="*{localDeDestino.uf}" class="form-control" required>
+
+                        <option value="">Selecione um estado</option>
+
+                        <option value="AC">Acre</option>
+                        <option value="AL">Alagoas</option>
+                        <option value="AP">Amapá</option>
+                        <option value="AM">Amazonas</option>
+                        <option value="BA">Bahia</option>
+                        <option value="CE">Ceará</option>
+                        <option value="DF">Distrito Federal</option>
+                        <option value="ES">Espírito Santo</option>
+                        <option value="GO">Goiás</option>
+                        <option value="MA">Maranhão</option>
+                        <option value="MT">Mato Grosso</option>
+                        <option value="MS">Mato Grosso do Sul</option>
+                        <option value="MG">Minas Gerais</option>
+                        <option value="PA">Pará</option>
+                        <option value="PB">Paraíba</option>
+                        <option value="PR">Paraná</option>
+                        <option value="PE">Pernambuco</option>
+                        <option value="PI">Piauí</option>
+                        <option value="RJ">Rio de Janeiro</option>
+                        <option value="RN">Rio Grande do Norte</option>
+                        <option value="RS">Rio Grande do Sul</option>
+                        <option value="RO">Rondônia</option>
+                        <option value="RR">Roraima</option>
+                        <option value="SC">Santa Catarina</option>
+                        <option value="SP">São Paulo</option>
+                        <option value="SE">Sergipe</option>
+                        <option value="TO">Tocantins</option>
+
+                    </select>
                 </div>
             </div>
 
@@ -336,6 +395,173 @@
     </div>
 </div>
 
+<div id="modalEditarViagem" class="modal-overlay" th:if="${viagemSelecionada != null}">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Editar Viagem</h3>
+            <button type="button" onclick="closeModal('modalEditarViagem')" class="close-btn">&times;</button>
+        </div>
+        <form th:action="@{/viagens/atualizar/${viagemSelecionada.id}}" th:object="${viagemSelecionada}" method="post">
+            <input th:if="${evento.id != null}" type="hidden" name="idEvento.id" th:value="${evento.id}" />
+
+            <div class="form-group">
+                <div class="label-with-btn">
+                    <label>Local de Origem:</label>
+                </div>
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <label>Rua:</label>
+                        <input type="text" th:field="*{localDeOrigem.rua}" class="form-control" placeholder="Nome da rua" required>
+                    </div>
+                    <div class="form-group half-width">
+                        <label>Número:</label>
+                        <input type="number" th:field="*{localDeOrigem.numero}" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <label>Bairro:</label>
+                        <input type="text" th:field="*{localDeOrigem.bairro}" class="form-control" required>
+                    </div>
+                    <div class="form-group half-width">
+                        <label>Cidade:</label>
+                        <input type="text" th:field="*{localDeOrigem.cidade}" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>UF:</label>
+                    <select th:field="*{localDeOrigem.uf}" class="form-control" required>
+
+                        <option value="">Selecione um estado</option>
+
+                        <option value="AC">Acre</option>
+                        <option value="AL">Alagoas</option>
+                        <option value="AP">Amapá</option>
+                        <option value="AM">Amazonas</option>
+                        <option value="BA">Bahia</option>
+                        <option value="CE">Ceará</option>
+                        <option value="DF">Distrito Federal</option>
+                        <option value="ES">Espírito Santo</option>
+                        <option value="GO">Goiás</option>
+                        <option value="MA">Maranhão</option>
+                        <option value="MT">Mato Grosso</option>
+                        <option value="MS">Mato Grosso do Sul</option>
+                        <option value="MG">Minas Gerais</option>
+                        <option value="PA">Pará</option>
+                        <option value="PB">Paraíba</option>
+                        <option value="PR">Paraná</option>
+                        <option value="PE">Pernambuco</option>
+                        <option value="PI">Piauí</option>
+                        <option value="RJ">Rio de Janeiro</option>
+                        <option value="RN">Rio Grande do Norte</option>
+                        <option value="RS">Rio Grande do Sul</option>
+                        <option value="RO">Rondônia</option>
+                        <option value="RR">Roraima</option>
+                        <option value="SC">Santa Catarina</option>
+                        <option value="SP">São Paulo</option>
+                        <option value="SE">Sergipe</option>
+                        <option value="TO">Tocantins</option>
+
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="label-with-btn">
+                    <label>Local de Destino:</label>
+                </div>
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <label>Rua:</label>
+                        <input type="text" th:field="*{localDeDestino.rua}" class="form-control" placeholder="Nome da rua" required>
+                    </div>
+                    <div class="form-group half-width">
+                        <label>Número:</label>
+                        <input type="number" th:field="*{localDeDestino.numero}" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <label>Bairro:</label>
+                        <input type="text" th:field="*{localDeDestino.bairro}" class="form-control" required>
+                    </div>
+                    <div class="form-group half-width">
+                        <label>Cidade:</label>
+                        <input type="text" th:field="*{localDeDestino.cidade}" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>UF:</label>
+                    <select th:field="*{localDeDestino.uf}" class="form-control" required>
+
+                        <option value="">Selecione um estado</option>
+
+                        <option value="AC">Acre</option>
+                        <option value="AL">Alagoas</option>
+                        <option value="AP">Amapá</option>
+                        <option value="AM">Amazonas</option>
+                        <option value="BA">Bahia</option>
+                        <option value="CE">Ceará</option>
+                        <option value="DF">Distrito Federal</option>
+                        <option value="ES">Espírito Santo</option>
+                        <option value="GO">Goiás</option>
+                        <option value="MA">Maranhão</option>
+                        <option value="MT">Mato Grosso</option>
+                        <option value="MS">Mato Grosso do Sul</option>
+                        <option value="MG">Minas Gerais</option>
+                        <option value="PA">Pará</option>
+                        <option value="PB">Paraíba</option>
+                        <option value="PR">Paraná</option>
+                        <option value="PE">Pernambuco</option>
+                        <option value="PI">Piauí</option>
+                        <option value="RJ">Rio de Janeiro</option>
+                        <option value="RN">Rio Grande do Norte</option>
+                        <option value="RS">Rio Grande do Sul</option>
+                        <option value="RO">Rondônia</option>
+                        <option value="RR">Roraima</option>
+                        <option value="SC">Santa Catarina</option>
+                        <option value="SP">São Paulo</option>
+                        <option value="SE">Sergipe</option>
+                        <option value="TO">Tocantins</option>
+
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group half-width">
+                    <div class="label-with-btn">
+                        <label>Veículo:</label>
+                        <button type="button" class="btn-link" onclick="openModal('modalVeiculo')">+ Novo</button>
+                    </div>
+                    <select name="idVeiculo" required>
+                        <option value="">Selecione...</option>
+                        <option th:each="v : ${listaVeiculos}" th:value="${v.idPlaca}" th:text="${v.modelo}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group half-width">
+                    <div class="label-with-btn">
+                        <label>Motorista:</label>
+                        <button type="button" class="btn-link" onclick="openModal('modalMotorista')">+ Novo</button>
+                    </div>
+                    <select name="idMotorista.id" required>
+                        <option value="">Selecione...</option>
+                        <option th:each="m : ${listaMotoristas}" th:value="${m.id}" th:text="${m.nome}"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save" style="width: 100%;">Salvar Viagem</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <div id="modalPassageiro" class="modal-overlay">
     <div class="modal-content">
