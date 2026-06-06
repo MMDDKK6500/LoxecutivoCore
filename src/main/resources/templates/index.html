@@ -10,7 +10,6 @@
 </head>
 <body>
 
-<!-- Sidebar -->
 <aside class="sidebar">
     <h1>Loxecutivo</h1>
     <h2 th:if="${evento.id} == null">Novo evento</h2>
@@ -18,15 +17,12 @@
     <form class="evento-form" th:action="@{${evento.id} != null ? '/eventos/atualizar/' + ${evento.id} : '/eventos'}"
           th:object="${evento}" method="post">
 
-        <!-- IDs Ocultos -->
         <input type="hidden" th:field="*{id}" />
         <input type="hidden" th:field="*{idEndereco.id}" />
 
-        <!-- Dados do Evento -->
         <div class="form-group">
             <label for="nome">Nome do Evento:</label>
             <input type="text" id="nome" th:field="*{nome}" placeholder="Ex: Show de Rock" required/>
-            <span class="error-msg" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
         </div>
 
         <h3 class="section-title">Local do evento</h3>
@@ -39,7 +35,7 @@
         <div class="form-row">
             <div class="form-group half-width">
                 <label for="numero">Número:</label>
-                <input type="number" id="numero" th:field="*{idEndereco.numero}" required/>
+                <input type="number" id="numero" th:field="*{idEndereco.numero}" required min="0"/>
             </div>
             <div class="form-group half-width">
                 <label for="uf">UF:</label>
@@ -89,7 +85,6 @@
             <input type="text" id="cidade" th:field="*{idEndereco.cidade}" required/>
         </div>
 
-        <!-- Botões -->
         <div class="form-actions">
             <button type="submit" class="btn btn-save">Salvar</button>
 
@@ -102,14 +97,12 @@
         </div>
     </form>
 
-    <!-- Linha divisória -->
     <hr class="divider">
 
-    <!-- NOVO: Seletor de Eventos -->
     <div class="evento-selector">
         <label for="listaEventos">Navegar pelos Eventos:</label>
         <select id="listaEventos" onchange="location = this.value;">
-            <option value="/">Criar Novo Evento</option>
+            <option th:if="${evento.id} == null" value="/">Criar Novo Evento</option>
             <option th:each="ev : ${listaEventos}"
                     th:value="@{/{id}(id=${ev.id})}"
                     th:text="${ev.nome}"
@@ -118,12 +111,18 @@
         </select>
     </div>
 
+    <hr class="divider">
+
+    <a th:if="${evento.id != null}"
+       th:href="@{/}"
+       class="btn btn-save btn-new">
+        Criar novo evento
+    </a>
+
 </aside>
 
-<!-- Main Section -->
 
 <div class="main" th:if="${evento.id} == null">
-    <!--Selecione um evento -->
 </div>
 <div class="main" th:if="${evento.id != null}">
 
@@ -179,11 +178,11 @@
                     <li th:each="p : ${passageirosDaViagem}">
                         <div class="person-info">
                             <strong th:text="${p.nome + ' ' + p.sobrenome}"></strong>
-                            <small th:text="${'CPF: ' + p.cpf}"></small>
+                            <small th:text="${'CPF: ' + p.getCpfFormatado()}"></small>
                         </div>
 
                         <div class="item-actions">
-                            <a onclick="openModal('modalEditarPassageiro')" title="Editar">
+                            <a th:href="@{/{eventoId}/{viagemId}/{passageiroId}(eventoId=${evento.id},viagemId=${viagemSelecionada.id},passageiroId=${p.id},modal='modalEditarPassageiro')}" onclick="openModal('modalEditarPassageiro')" title="Editar">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <a th:href="@{/passageiros/deletar/{id}(id=${p.id})}" title="Remover" onclick="return confirm('Remover passageiro?');">
@@ -221,7 +220,7 @@
                                 <span class="dot origin"></span>
                                 <p><strong>Origem:</strong> <span th:text="${viagemSelecionada.localDeOrigem.rua + ', ' + viagemSelecionada.localDeOrigem.numero + ' - ' + viagemSelecionada.localDeOrigem.bairro + ',' + viagemSelecionada.localDeOrigem.cidade + ' - ' + viagemSelecionada.localDeOrigem.uf}"></span></p>
                             </div>
-                            <div class="route-line"></div>
+                            <br>
                             <div class="route-step">
                                 <span class="dot destination"></span>
                                 <p><strong>Destino:</strong> <span th:text="${viagemSelecionada.localDeDestino.rua + ', ' + viagemSelecionada.localDeDestino.numero + ' - ' + viagemSelecionada.localDeDestino.bairro + ',' + viagemSelecionada.localDeDestino.cidade + ' - ' + viagemSelecionada.localDeDestino.uf}"></span></p>
@@ -234,13 +233,13 @@
                         <div th:if="${veiculoSelecionado != null}" class="info-box">
                             <div class="info-header">
                                 <p>
+                                    <strong th:text="${veiculoSelecionado.marca + ' - ' + veiculoSelecionado.modelo}"></strong>
+                                    |
                                 Placa:
                                     <span class="badge" th:text="${veiculoSelecionado.idPlaca}"></span>
-                                    |
-                                <strong th:text="${veiculoSelecionado.marca + ' - ' + veiculoSelecionado.modelo}"></strong>
                                 </p>
                             </div>
-                            <p><small th:text="${veiculoSelecionado.cor}"></small></p>
+                            <p><small th:text="'Cor: ' + ${veiculoSelecionado.cor}"></small></p>
                         </div>
                     </div>
 
@@ -248,178 +247,44 @@
                         <h4 class="sub-title">👤 Motorista Responsável</h4>
                         <div th:if="${viagemSelecionada.idMotorista != null}" class="info-box">
                             <strong th:text="${viagemSelecionada.idMotorista.nome + ' ' + viagemSelecionada.idMotorista.sobrenome}"></strong>
-                            <p><small th:text="'RG: ' + ${viagemSelecionada.idMotorista.rg} + ' | CPF: ' + ${viagemSelecionada.idMotorista.cpf}"></small></p>
+                            <p><small class="cpf" th:text="'RG: ' + ${viagemSelecionada.idMotorista.getRgFormatado()} + ' | CPF: ' + ${viagemSelecionada.idMotorista.getCpfFormatado()}"></small></p>
                         </div>
                         <div th:if="${viagemSelecionada.idMotorista == null}" class="empty-msg-box">
                             <p>Nenhum motorista designado.</p>
                             <button type="button" onclick="openModal('modalMotorista')" class="link-action">+ Adicionar Motorista</button>
                         </div>
                     </div>
-
                 </div>
             </div>
-
         </div>
     </section>
 </div>
 
 
 
-<!-- modals !-->
 <div id="modalViagem" class="modal-overlay">
     <div class="modal-content modal-large">
         <div class="modal-header">
             <h3>Nova Viagem</h3>
             <button type="button" onclick="closeModal('modalViagem')" class="close-btn">&times;</button>
         </div>
-        <form th:action="@{/viagens}" th:object="${novaViagem}" method="post">
+        <form th:action="@{/viagens} " th:object="${novaViagem}" method="post">
             <input th:if="${evento.id != null}" type="hidden" name="idEvento.id" th:value="${evento.id}" />
 
             <div class="flex-horizontal-container">
 
                 <div class="modal-section-col">
-                    <h4 class="section-title">1. Origem</h4>
-
-                    <div class="form-row">
-                        <div class="form-group half-width">
-                            <label>Rua:</label>
-                            <input type="text" th:field="*{localDeOrigem.rua}" class="form-control" th:classappend="${#fields.hasErrors('localDeOrigem.rua')} ? 'input-error' : ''" placeholder="Rua" required>
-                            <span class="error-msg" th:if="${#fields.hasErrors('localDeOrigem.rua')}" th:errors="*{localDeOrigem.rua}"></span>
-                        </div>
-                        <div class="form-group half-width">
-                            <label>Número:</label>
-                            <input type="number" th:field="*{localDeOrigem.numero}" class="form-control" th:classappend="${#fields.hasErrors('localDeOrigem.numero')} ? 'input-error' : ''" required>
-                            <span class="error-msg" th:if="${#fields.hasErrors('localDeOrigem.numero')}" th:errors="*{localDeOrigem.numero}"></span>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group half-width">
-                            <label>Bairro:</label>
-                            <input type="text" th:field="*{localDeOrigem.bairro}" class="form-control" th:classappend="${#fields.hasErrors('localDeOrigem.bairro')} ? 'input-error' : ''" required>
-                            <span class="error-msg" th:if="${#fields.hasErrors('localDeOrigem.bairro')}" th:errors="*{localDeOrigem.bairro}"></span>
-                        </div>
-                        <div class="form-group half-width">
-                            <label>Cidade:</label>
-                            <input type="text" th:field="*{localDeOrigem.cidade}" class="form-control" th:classappend="${#fields.hasErrors('localDeOrigem.cidade')} ? 'input-error' : ''" required>
-                            <span class="error-msg" th:if="${#fields.hasErrors('localDeOrigem.cidade')}" th:errors="*{localDeOrigem.cidade}"></span>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>UF:</label>
-                        <select th:field="*{localDeOrigem.uf}" class="form-control" th:classappend="${#fields.hasErrors('localDeOrigem.uf')} ? 'input-error' : ''" required>
-                            <option value="">Selecione um estado</option>
-                            <option value="AC">Acre</option>
-                            <option value="AL">Alagoas</option>
-                            <option value="AP">Amapá</option>
-                            <option value="AM">Amazonas</option>
-                            <option value="BA">Bahia</option>
-                            <option value="CE">Ceará</option>
-                            <option value="DF">Distrito Federal</option>
-                            <option value="ES">Espírito Santo</option>
-                            <option value="GO">Goiás</option>
-                            <option value="MA">Maranhão</option>
-                            <option value="MT">Mato Grosso</option>
-                            <option value="MS">Mato Grosso do Sul</option>
-                            <option value="MG">Minas Gerais</option>
-                            <option value="PA">Pará</option>
-                            <option value="PB">Paraíba</option>
-                            <option value="PR">Paraná</option>
-                            <option value="PE">Pernambuco</option>
-                            <option value="PI">Piauí</option>
-                            <option value="RJ">Rio de Janeiro</option>
-                            <option value="RN">Rio Grande do Norte</option>
-                            <option value="RS">Rio Grande do Sul</option>
-                            <option value="RO">Rondônia</option>
-                            <option value="RR">Roraima</option>
-                            <option value="SC">Santa Catarina</option>
-                            <option value="SP">São Paulo</option>
-                            <option value="SE">Sergipe</option>
-                            <option value="TO">Tocantins</option>
-                        </select>
-                        <span class="error-msg" th:if="${#fields.hasErrors('localDeOrigem.uf')}" th:errors="*{localDeOrigem.uf}"></span>
-                    </div>
-                </div>
-
-                <div class="modal-section-col">
-                    <h4 class="section-title">2. Destino</h4>
-
-                    <div class="form-row">
-                        <div class="form-group half-width">
-                            <label>Rua:</label>
-                            <input type="text" th:field="*{localDeDestino.rua}" class="form-control" th:classappend="${#fields.hasErrors('localDeDestino.rua')} ? 'input-error' : ''" placeholder="Rua" required>
-                            <span class="error-msg" th:if="${#fields.hasErrors('localDeDestino.rua')}" th:errors="*{localDeDestino.rua}"></span>
-                        </div>
-                        <div class="form-group half-width">
-                            <label>Número:</label>
-                            <input type="number" th:field="*{localDeDestino.numero}" class="form-control" th:classappend="${#fields.hasErrors('localDeDestino.numero')} ? 'input-error' : ''" required>
-                            <span class="error-msg" th:if="${#fields.hasErrors('localDeDestino.numero')}" th:errors="*{localDeDestino.numero}"></span>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group half-width">
-                            <label>Bairro:</label>
-                            <input type="text" th:field="*{localDeDestino.bairro}" class="form-control" th:classappend="${#fields.hasErrors('localDeDestino.bairro')} ? 'input-error' : ''" required>
-                            <span class="error-msg" th:if="${#fields.hasErrors('localDeDestino.bairro')}" th:errors="*{localDeDestino.bairro}"></span>
-                        </div>
-                        <div class="form-group half-width">
-                            <label>Cidade:</label>
-                            <input type="text" th:field="*{localDeDestino.cidade}" class="form-control" th:classappend="${#fields.hasErrors('localDeDestino.cidade')} ? 'input-error' : ''" required>
-                            <span class="error-msg" th:if="${#fields.hasErrors('localDeDestino.cidade')}" th:errors="*{localDeDestino.cidade}"></span>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>UF:</label>
-                        <select th:field="*{localDeDestino.uf}" class="form-control" th:classappend="${#fields.hasErrors('localDeDestino.uf')} ? 'input-error' : ''" required>
-                            <option value="">Selecione um estado</option>
-                            <option value="AC">Acre</option>
-                            <option value="AL">Alagoas</option>
-                            <option value="AP">Amapá</option>
-                            <option value="AM">Amazonas</option>
-                            <option value="BA">Bahia</option>
-                            <option value="CE">Ceará</option>
-                            <option value="DF">Distrito Federal</option>
-                            <option value="ES">Espírito Santo</option>
-                            <option value="GO">Goiás</option>
-                            <option value="MA">Maranhão</option>
-                            <option value="MT">Mato Grosso</option>
-                            <option value="MS">Mato Grosso do Sul</option>
-                            <option value="MG">Minas Gerais</option>
-                            <option value="PA">Pará</option>
-                            <option value="PB">Paraíba</option>
-                            <option value="PR">Paraná</option>
-                            <option value="PE">Pernambuco</option>
-                            <option value="PI">Piauí</option>
-                            <option value="RJ">Rio de Janeiro</option>
-                            <option value="RN">Rio Grande do Norte</option>
-                            <option value="RS">Rio Grande do Sul</option>
-                            <option value="RO">Rondônia</option>
-                            <option value="RR">Roraima</option>
-                            <option value="SC">Santa Catarina</option>
-                            <option value="SP">São Paulo</option>
-                            <option value="SE">Sergipe</option>
-                            <option value="TO">Tocantins</option>
-                        </select>
-                        <span class="error-msg" th:if="${#fields.hasErrors('localDeDestino.uf')}" th:errors="*{localDeDestino.uf}"></span>
-                    </div>
-                </div>
-
-                <div class="modal-section-col">
-                    <h4 class="section-title">3. Transporte</h4>
+                    <h4 class="section-title">1. Transporte</h4>
 
                     <div class="form-group">
                         <div class="label-with-btn">
                             <label>Veículo:</label>
                             <button type="button" class="btn-link" onclick="openModal('modalVeiculo')">+ Novo</button>
                         </div>
-                        <select th:field="*{idVeiculo}" th:classappend="${#fields.hasErrors('idVeiculo')} ? 'input-error' : ''" required>
+                        <select th:field="*{idVeiculo}" required>
                             <option value="">Selecione um veículo...</option>
-                            <option th:each="v : ${listaVeiculos}" th:value="${v.idPlaca}" th:text="${v.modelo}"></option>
+                            <option th:each="v : ${listaVeiculos}" th:value="${v.idPlaca}" th:text="${v.idPlaca}"></option>
                         </select>
-                        <span class="error-msg" th:if="${#fields.hasErrors('idVeiculo')}" th:errors="*{idVeiculo}"></span>
                     </div>
 
                     <div class="form-group" style="margin-top: 15px;">
@@ -427,11 +292,130 @@
                             <label>Motorista:</label>
                             <button type="button" class="btn-link" onclick="openModal('modalMotorista')">+ Novo</button>
                         </div>
-                        <select th:field="*{idMotorista.id}" th:classappend="${#fields.hasErrors('idMotorista.id')} ? 'input-error' : ''" required>
+                        <select th:field="*{idMotorista.id}" required>
                             <option value="">Selecione um motorista...</option>
-                            <option th:each="m : ${listaMotoristas}" th:value="${m.id}" th:text="${m.nome}"></option>
+                            <option th:each="m : ${listaMotoristas}" th:value="${m.id}" th:text="${m.nome + ' ' + m.sobrenome}"></option>
                         </select>
-                        <span class="error-msg" th:if="${#fields.hasErrors('idMotorista.id')}" th:errors="*{idMotorista.id}"></span>
+                    </div>
+                </div>
+
+                <div class="modal-section-col">
+                    <h4 class="section-title">2. Origem</h4>
+
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label>Rua:</label>
+                            <input type="text" th:field="*{localDeOrigem.rua}" class="form-control" placeholder="Rua" required>
+                        </div>
+                        <div class="form-group half-width">
+                            <label>Número:</label>
+                            <input type="number" th:field="*{localDeOrigem.numero}" class="form-control" required min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label>Bairro:</label>
+                            <input type="text" th:field="*{localDeOrigem.bairro}" class="form-control" required>
+                        </div>
+                        <div class="form-group half-width">
+                            <label>Cidade:</label>
+                            <input type="text" th:field="*{localDeOrigem.cidade}" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>UF:</label>
+                        <select th:field="*{localDeOrigem.uf}" class="form-control" required>
+                            <option value="">Selecione um estado</option>
+                            <option value="AC">Acre</option>
+                            <option value="AL">Alagoas</option>
+                            <option value="AP">Amapá</option>
+                            <option value="AM">Amazonas</option>
+                            <option value="BA">Bahia</option>
+                            <option value="CE">Ceará</option>
+                            <option value="DF">Distrito Federal</option>
+                            <option value="ES">Espírito Santo</option>
+                            <option value="GO">Goiás</option>
+                            <option value="MA">Maranhão</option>
+                            <option value="MT">Mato Grosso</option>
+                            <option value="MS">Mato Grosso do Sul</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="PA">Pará</option>
+                            <option value="PB">Paraíba</option>
+                            <option value="PR">Paraná</option>
+                            <option value="PE">Pernambuco</option>
+                            <option value="PI">Piauí</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="RN">Rio Grande do Norte</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="RO">Rondônia</option>
+                            <option value="RR">Roraima</option>
+                            <option value="SC">Santa Catarina</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="SE">Sergipe</option>
+                            <option value="TO">Tocantins</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-section-col">
+                    <h4 class="section-title">3. Destino</h4>
+
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label>Rua:</label>
+                            <input type="text" th:field="*{localDeDestino.rua}" class="form-control" placeholder="Rua" required>
+                        </div>
+                        <div class="form-group half-width">
+                            <label>Número:</label>
+                            <input type="number" th:field="*{localDeDestino.numero}" class="form-control" required min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label>Bairro:</label>
+                            <input type="text" th:field="*{localDeDestino.bairro}" class="form-control" required>
+                        </div>
+                        <div class="form-group half-width">
+                            <label>Cidade:</label>
+                            <input type="text" th:field="*{localDeDestino.cidade}" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>UF:</label>
+                        <select th:field="*{localDeDestino.uf}" class="form-control" required>
+                            <option value="">Selecione um estado</option>
+                            <option value="AC">Acre</option>
+                            <option value="AL">Alagoas</option>
+                            <option value="AP">Amapá</option>
+                            <option value="AM">Amazonas</option>
+                            <option value="BA">Bahia</option>
+                            <option value="CE">Ceará</option>
+                            <option value="DF">Distrito Federal</option>
+                            <option value="ES">Espírito Santo</option>
+                            <option value="GO">Goiás</option>
+                            <option value="MA">Maranhão</option>
+                            <option value="MT">Mato Grosso</option>
+                            <option value="MS">Mato Grosso do Sul</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="PA">Pará</option>
+                            <option value="PB">Paraíba</option>
+                            <option value="PR">Paraná</option>
+                            <option value="PE">Pernambuco</option>
+                            <option value="PI">Piauí</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="RN">Rio Grande do Norte</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="RO">Rondônia</option>
+                            <option value="RR">Roraima</option>
+                            <option value="SC">Santa Catarina</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="SE">Sergipe</option>
+                            <option value="TO">Tocantins</option>
+                        </select>
                     </div>
                 </div>
 
@@ -443,7 +427,7 @@
 </div>
 
 <div id="modalEditarViagem" class="modal-overlay" th:if="${viagemSelecionada != null}">
-    <div class="modal-content">
+    <div class="modal-content modal-large">
         <div class="modal-header">
             <h3>Editar Viagem</h3>
             <button type="button" onclick="closeModal('modalEditarViagem')" class="close-btn">&times;</button>
@@ -451,14 +435,157 @@
         <form th:action="@{/viagens/atualizar/${viagemSelecionada.id}}" th:object="${viagemSelecionada}" method="post">
             <input th:if="${evento.id != null}" type="hidden" name="idEvento.id" th:value="${evento.id}" />
 
-            <div class="form-group">
-                <label>Rua Origem:</label>
-                <input type="text" th:field="*{localDeOrigem.rua}" class="form-control" th:classappend="${#fields.hasErrors('localDeOrigem.rua')} ? 'input-error' : ''" required>
-                <span class="error-msg" th:if="${#fields.hasErrors('localDeOrigem.rua')}" th:errors="*{localDeOrigem.rua}"></span>
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="btn btn-save" style="width: 100%;">Salvar Viagem</button>
-            </div>
+            <div class="flex-horizontal-container">
+
+                <div class="modal-section-col">
+                    <h4 class="section-title">1. Transporte</h4>
+
+                    <div class="form-group">
+                        <div class="label-with-btn">
+                            <label>Veículo:</label>
+                            <button type="button" class="btn-link" onclick="openModal('modalVeiculo')">+ Novo</button>
+                        </div>
+                        <select th:field="*{idVeiculo}" required>
+                            <option value="">Selecione um veículo...</option>
+                            <option th:each="v : ${listaVeiculos}" th:value="${v.idPlaca}" th:text="${v.idPlaca}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 15px;">
+                        <div class="label-with-btn">
+                            <label>Motorista:</label>
+                            <button type="button" class="btn-link" onclick="openModal('modalMotorista')">+ Novo</button>
+                        </div>
+                        <select th:field="*{idMotorista.id}" required>
+                            <option value="">Selecione um motorista...</option>
+                            <option th:each="m : ${listaMotoristas}" th:value="${m.id}" th:text="${m.nome + ' ' + m.sobrenome}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-section-col">
+                    <h4 class="section-title">2. Origem</h4>
+
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label>Rua:</label>
+                            <input type="text" th:field="*{localDeOrigem.rua}" class="form-control" placeholder="Rua" required>
+                        </div>
+                        <div class="form-group half-width">
+                            <label>Número:</label>
+                            <input type="number" th:field="*{localDeOrigem.numero}" class="form-control" required min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label>Bairro:</label>
+                            <input type="text" th:field="*{localDeOrigem.bairro}" class="form-control" required>
+                        </div>
+                        <div class="form-group half-width">
+                            <label>Cidade:</label>
+                            <input type="text" th:field="*{localDeOrigem.cidade}" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>UF:</label>
+                        <select th:field="*{localDeOrigem.uf}" class="form-control" required>
+                            <option value="">Selecione um estado</option>
+                            <option value="AC">Acre</option>
+                            <option value="AL">Alagoas</option>
+                            <option value="AP">Amapá</option>
+                            <option value="AM">Amazonas</option>
+                            <option value="BA">Bahia</option>
+                            <option value="CE">Ceará</option>
+                            <option value="DF">Distrito Federal</option>
+                            <option value="ES">Espírito Santo</option>
+                            <option value="GO">Goiás</option>
+                            <option value="MA">Maranhão</option>
+                            <option value="MT">Mato Grosso</option>
+                            <option value="MS">Mato Grosso do Sul</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="PA">Pará</option>
+                            <option value="PB">Paraíba</option>
+                            <option value="PR">Paraná</option>
+                            <option value="PE">Pernambuco</option>
+                            <option value="PI">Piauí</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="RN">Rio Grande do Norte</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="RO">Rondônia</option>
+                            <option value="RR">Roraima</option>
+                            <option value="SC">Santa Catarina</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="SE">Sergipe</option>
+                            <option value="TO">Tocantins</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-section-col">
+                    <h4 class="section-title">3. Destino</h4>
+
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label>Rua:</label>
+                            <input type="text" th:field="*{localDeDestino.rua}" class="form-control" placeholder="Rua" required>
+                        </div>
+                        <div class="form-group half-width">
+                            <label>Número:</label>
+                            <input type="number" th:field="*{localDeDestino.numero}" class="form-control" required min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label>Bairro:</label>
+                            <input type="text" th:field="*{localDeDestino.bairro}" class="form-control" required>
+                        </div>
+                        <div class="form-group half-width">
+                            <label>Cidade:</label>
+                            <input type="text" th:field="*{localDeDestino.cidade}" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>UF:</label>
+                        <select th:field="*{localDeDestino.uf}" class="form-control" required>
+                            <option value="">Selecione um estado</option>
+                            <option value="AC">Acre</option>
+                            <option value="AL">Alagoas</option>
+                            <option value="AP">Amapá</option>
+                            <option value="AM">Amazonas</option>
+                            <option value="BA">Bahia</option>
+                            <option value="CE">Ceará</option>
+                            <option value="DF">Distrito Federal</option>
+                            <option value="ES">Espírito Santo</option>
+                            <option value="GO">Goiás</option>
+                            <option value="MA">Maranhão</option>
+                            <option value="MT">Mato Grosso</option>
+                            <option value="MS">Mato Grosso do Sul</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="PA">Pará</option>
+                            <option value="PB">Paraíba</option>
+                            <option value="PR">Paraná</option>
+                            <option value="PE">Pernambuco</option>
+                            <option value="PI">Piauí</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="RN">Rio Grande do Norte</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="RO">Rondônia</option>
+                            <option value="RR">Roraima</option>
+                            <option value="SC">Santa Catarina</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="SE">Sergipe</option>
+                            <option value="TO">Tocantins</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div> <div class="form-actions">
+            <button type="submit" class="btn btn-save" style="width: 100%; margin-top: 10px;">Salvar Viagem</button>
+        </div>
         </form>
     </div>
 </div>
@@ -474,33 +601,27 @@
 
             <div class="form-group">
                 <label>Nome:</label>
-                <input type="text" th:field="*{nome}" th:classappend="${#fields.hasErrors('nome')} ? 'input-error' : ''" required>
-                <span class="error-msg" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
+                <input type="text" th:field="*{nome}" required>
             </div>
             <div class="form-group">
                 <label>Sobrenome:</label>
-                <input type="text" th:field="*{sobrenome}" th:classappend="${#fields.hasErrors('sobrenome')} ? 'input-error' : ''" required>
-                <span class="error-msg" th:if="${#fields.hasErrors('sobrenome')}" th:errors="*{sobrenome}"></span>
+                <input type="text" th:field="*{sobrenome}" required>
             </div>
             <div class="form-group">
                 <label>Telefone/Celular:</label>
-                <input type="number" th:field="*{numero}" th:classappend="${#fields.hasErrors('numero')} ? 'input-error' : ''" placeholder="Apenas números" required>
-                <span class="error-msg" th:if="${#fields.hasErrors('numero')}" th:errors="*{numero}"></span>
+                <input type="number" th:field="*{numero}" class="input-numero" placeholder="Apenas números" required>
             </div>
             <div class="form-group">
                 <label>Empresa:</label>
-                <input type="text" th:field="*{empresa}" th:classappend="${#fields.hasErrors('empresa')} ? 'input-error' : ''" placeholder="Caso não tenha uma, deixar em branco">
-                <span class="error-msg" th:if="${#fields.hasErrors('empresa')}" th:errors="*{empresa}"></span>
+                <input type="text" th:field="*{empresa}" placeholder="Caso não tenha uma, deixar em branco">
             </div>
             <div class="form-group">
                 <label>RG:</label>
-                <input type="number" th:field="*{rg}" th:classappend="${#fields.hasErrors('rg')} ? 'input-error' : ''" placeholder="Apenas números" required>
-                <span class="error-msg" th:if="${#fields.hasErrors('rg')}" th:errors="*{rg}"></span>
+                <input type="number" th:field="*{rg}" placeholder="Apenas números" class="input-rg" minlength="5" maxlength="9" required>
             </div>
             <div class="form-group">
                 <label>CPF:</label>
-                <input type="number" th:field="*{cpf}" th:classappend="${#fields.hasErrors('cpf')} ? 'input-error' : ''" placeholder="Apenas números" required>
-                <span class="error-msg" th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}"></span>
+                <input type="number" th:field="*{cpf}" placeholder="Apenas números" class="input-cpf" minlength="11" maxlength="11" required>
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn btn-save" style="width: 100%;">Adicionar Passageiro</button>
@@ -509,44 +630,38 @@
     </div>
 </div>
 
-<div id="modalEditarPassageiro" class="modal-overlay">
+<div id="modalEditarPassageiro" class="modal-overlay" th:if="${editarPassageiro != null}">
     <div class="modal-content">
         <div class="modal-header">
             <h3>Editar Passageiro</h3>
             <button type="button" onclick="closeModal('modalEditarPassageiro')" class="close-btn">&times;</button>
         </div>
-        <form th:action="@{/passageiros}" th:object="${novoPassageiro}" method="post">
+        <form th:action="@{${'/passageiros/atualizar/' + editarPassageiro.id}}" th:object="${editarPassageiro}" method="post">
             <input th:if="${viagemSelecionada != null}" type="hidden" name="idViagem.id" th:value="${viagemSelecionada.id}" />
 
             <div class="form-group">
                 <label>Nome:</label>
-                <input type="text" th:field="*{nome}" th:classappend="${#fields.hasErrors('nome')} ? 'input-error' : ''" required>
-                <span class="error-msg" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
+                <input type="text" th:field="*{nome}" required>
             </div>
             <div class="form-group">
                 <label>Sobrenome:</label>
-                <input type="text" th:field="*{sobrenome}" th:classappend="${#fields.hasErrors('sobrenome')} ? 'input-error' : ''" required>
-                <span class="error-msg" th:if="${#fields.hasErrors('sobrenome')}" th:errors="*{sobrenome}"></span>
+                <input type="text" th:field="*{sobrenome}" required>
             </div>
             <div class="form-group">
                 <label>Telefone/Celular:</label>
-                <input type="number" th:field="*{numero}" th:classappend="${#fields.hasErrors('numero')} ? 'input-error' : ''" placeholder="Apenas números" required>
-                <span class="error-msg" th:if="${#fields.hasErrors('numero')}" th:errors="*{numero}"></span>
+                <input type="number" th:field="*{numero}" class="input-numero" placeholder="Apenas números" required>
             </div>
             <div class="form-group">
                 <label>Empresa:</label>
-                <input type="text" th:field="*{empresa}" th:classappend="${#fields.hasErrors('empresa')} ? 'input-error' : ''" placeholder="Caso não tenha uma, deixar em branco">
-                <span class="error-msg" th:if="${#fields.hasErrors('empresa')}" th:errors="*{empresa}"></span>
+                <input type="text" th:field="*{empresa}" placeholder="Caso não tenha uma, deixar em branco">
             </div>
             <div class="form-group">
                 <label>RG:</label>
-                <input type="number" th:field="*{rg}" th:classappend="${#fields.hasErrors('rg')} ? 'input-error' : ''" placeholder="Apenas números" required>
-                <span class="error-msg" th:if="${#fields.hasErrors('rg')}" th:errors="*{rg}"></span>
+                <input type="number" th:field="*{rg}" placeholder="Apenas números" minlength="5" maxlength="9" class="input-rg" required>
             </div>
             <div class="form-group">
                 <label>CPF:</label>
-                <input type="number" th:field="*{cpf}" th:classappend="${#fields.hasErrors('cpf')} ? 'input-error' : ''" placeholder="Apenas números" required>
-                <span class="error-msg" th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}"></span>
+                <input type="number" id="editaPassageiroCPF" th:field="*{cpf}" placeholder="Apenas números" minlength="11" maxlength="11" required class="input-cpf">
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn btn-save" style="width: 100%;">Salvar Passageiro</button>
@@ -561,38 +676,35 @@
             <h3>Cadastrar Veículo</h3>
             <button type="button" onclick="closeModal('modalVeiculo')" class="close-btn">&times;</button>
         </div>
-        <form th:action="@{/veiculos}" th:object="${novoVeiculo}" method="post">
+        <form th:action="@{${'/veiculos/' + evento.id}}" th:object="${novoVeiculo}" method="post">
             <div class="form-group">
-                <label for="idPlaca">Placa:</label>
-                <input type="text" th:field="*{idPlaca}" th:classappend="${#fields.hasErrors('idPlaca')} ? 'input-error' : ''" placeholder="Ex: ABC1D23" maxlength="7" required>
-                <span class="error-msg" th:if="${#fields.hasErrors('idPlaca')}" th:errors="*{idPlaca}"></span>
+                <label>Placa:</label>
+                <input type="text" th:field="*{idPlaca}" class="input-placa" placeholder="Ex: ABC1D23" minlength="7" maxlength="7" required>
             </div>
 
             <div class="form-row">
                 <div class="form-group half-width">
-                    <label for="modelo">Modelo:</label>
-                    <input type="text" th:field="*{modelo}" th:classappend="${#fields.hasErrors('modelo')} ? 'input-error' : ''" required>
-                    <span class="error-msg" th:if="${#fields.hasErrors('modelo')}" th:errors="*{modelo}"></span>
+                    <label>Modelo:</label>
+                    <input type="text" th:field="*{modelo}" required>
                 </div>
                 <div class="form-group half-width">
-                    <label for="marca">Marca:</label>
-                    <input type="text" th:field="*{marca}" th:classappend="${#fields.hasErrors('marca')} ? 'input-error' : ''" required>
-                    <span class="error-msg" th:if="${#fields.hasErrors('marca')}" th:errors="*{marca}"></span>
+                    <label>Marca:</label>
+                    <input type="text" th:field="*{marca}" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group half-width">
-                    <label for="ano">Ano:</label>
-                    <input type="number" th:field="*{ano}" th:classappend="${#fields.hasErrors('ano')} ? 'input-error' : ''" required>
-                    <span class="error-msg" th:if="${#fields.hasErrors('ano')}" th:errors="*{ano}"></span>
+                    <label>Ano:</label>
+                    <input type="number" th:field="*{ano}" class="input-ano" required min="1900" step="1">
                 </div>
                 <div class="form-group half-width">
-                    <label for="cor">Cor:</label>
-                    <input type="text" th:field="*{cor}" th:classappend="${#fields.hasErrors('cor')} ? 'input-error' : ''" required>
-                    <span class="error-msg" th:if="${#fields.hasErrors('cor')}" th:errors="*{cor}"></span>
+                    <label>Cor:</label>
+                    <input type="text" th:field="*{cor}" required>
                 </div>
             </div>
+
+            <p class="info-text">Após salvar, o veículo estará disponível para seleção no formulário de viagem.</p>
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-save" style="width: 100%;">Salvar Veículo</button>
@@ -607,31 +719,27 @@
             <h3>Cadastrar Motorista</h3>
             <button type="button" onclick="closeModal('modalMotorista')" class="close-btn">&times;</button>
         </div>
-        <form th:action="@{/motoristas}" th:object="${novoMotorista}" method="post">
+        <form th:action="@{${'/motoristas/' + evento.id}}" th:object="${novoMotorista}" method="post">
 
             <div class="form-row">
                 <div class="form-group half-width">
                     <label for="nomeMotorista">Nome:</label>
-                    <input type="text" id="nomeMotorista" th:field="*{nome}" th:classappend="${#fields.hasErrors('nome')} ? 'input-error' : ''" placeholder="Nome" required>
-                    <span class="error-msg" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
+                    <input type="text" id="nomeMotorista" th:field="*{nome}" placeholder="Nome" required>
                 </div>
                 <div class="form-group half-width">
                     <label for="sobrenomeMotorista">Sobrenome:</label>
-                    <input type="text" id="sobrenomeMotorista" th:field="*{sobrenome}" th:classappend="${#fields.hasErrors('sobrenome')} ? 'input-error' : ''" placeholder="Sobrenome" required>
-                    <span class="error-msg" th:if="${#fields.hasErrors('sobrenome')}" th:errors="*{sobrenome}"></span>
+                    <input type="text" id="sobrenomeMotorista" th:field="*{sobrenome}" placeholder="Sobrenome" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group half-width">
                     <label for="rgMotorista">RG:</label>
-                    <input type="text" id="rgMotorista" th:field="*{rg}" th:classappend="${#fields.hasErrors('rg')} ? 'input-error' : ''" placeholder="Apenas números" maxlength="9" required>
-                    <span class="error-msg" th:if="${#fields.hasErrors('rg')}" th:errors="*{rg}"></span>
+                    <input type="text" id="rgMotorista" th:field="*{rg}" class="input-rg" placeholder="Apenas números" minlength="5" maxlength="9" required>
                 </div>
                 <div class="form-group half-width">
                     <label for="cpfMotorista">CPF:</label>
-                    <input type="text" id="cpfMotorista" th:field="*{cpf}" th:classappend="${#fields.hasErrors('cpf')} ? 'input-error' : ''" placeholder="Apenas números" maxlength="11" onblur="ValidaCPF( 'cpfMotorista')" required>
-                    <span class="error-msg" th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}"></span>
+                    <input type="text" id="cpfMotorista" th:field="*{cpf}" class="input-cpf" placeholder="Apenas números" minlength="11" maxlength="11" required>
                 </div>
             </div>
 
@@ -654,19 +762,17 @@
 
             <div class="form-group">
                 <label>Rua:</label>
-                <input type="text" th:field="*{rua}" th:classappend="${#fields.hasErrors('rua')} ? 'input-error' : ''" required>
-                <span class="error-msg" th:if="${#fields.hasErrors('rua')}" th:errors="*{rua}"></span>
+                <input type="text" th:field="*{rua}" required>
             </div>
 
             <div class="form-row">
                 <div class="form-group half-width">
                     <label>Número:</label>
-                    <input type="number" th:field="*{numero}" th:classappend="${#fields.hasErrors('numero')} ? 'input-error' : ''" required>
-                    <span class="error-msg" th:if="${#fields.hasErrors('numero')}" th:errors="*{numero}"></span>
+                    <input type="number" th:field="*{numero}" required min="0">
                 </div>
                 <div class="form-group half-width">
                     <label>UF:</label>
-                    <select th:field="*{uf}" class="form-control" th:classappend="${#fields.hasErrors('uf')} ? 'input-error' : ''" required>
+                    <select th:field="*{uf}" class="form-control" required>
                         <option value="">Selecione um estado</option>
 
                         <option value="AC">Acre</option>
@@ -697,20 +803,17 @@
                         <option value="SE">Sergipe</option>
                         <option value="TO">Tocantins</option>
                     </select>
-                    <span class="error-msg" th:if="${#fields.hasErrors('uf')}" th:errors="*{uf}"></span>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group half-width">
                     <label>Bairro:</label>
-                    <input type="text" th:field="*{bairro}" th:classappend="${#fields.hasErrors('bairro')} ? 'input-error' : ''" required>
-                    <span class="error-msg" th:if="${#fields.hasErrors('bairro')}" th:errors="*{bairro}"></span>
+                    <input type="text" th:field="*{bairro}" required>
                 </div>
                 <div class="form-group half-width">
                     <label>Cidade:</label>
-                    <input type="text" th:field="*{cidade}" th:classappend="${#fields.hasErrors('cidade')} ? 'input-error' : ''" required>
-                    <span class="error-msg" th:if="${#fields.hasErrors('cidade')}" th:errors="*{cidade}"></span>
+                    <input type="text" th:field="*{cidade}" required>
                 </div>
             </div>
 
@@ -720,5 +823,11 @@
         </form>
     </div>
 </div>
+<script th:inline="javascript">
+    const urlParams = new URLSearchParams(window.location.search);
+    const myParam = urlParams.get('modal');
+    console.log(myParam)
+    openModal(myParam)
+</script>
 </body>
 </html>

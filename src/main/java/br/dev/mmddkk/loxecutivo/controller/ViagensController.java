@@ -26,24 +26,8 @@ public class ViagensController {
     private VeiculoRepository veiculoRepository;
     @Autowired
     private EventoRepository eventoRepository;
-
-    @GetMapping
-    public ModelAndView listar() {
-        ModelAndView mv = new ModelAndView("viagens/lista");
-        mv.addObject("viagens", viagensRepository.findAll());
-        return mv;
-    }
-
-    @GetMapping("/novo")
-    public ModelAndView novo() {
-        ModelAndView mv = new ModelAndView("viagens/form");
-        mv.addObject("viagem", new Viagens());
-        mv.addObject("enderecos", enderecoRepository.findAll());
-        mv.addObject("motoristas", motoristaRepository.findAll());
-        mv.addObject("veiculos", veiculoRepository.findAll());
-        mv.addObject("eventos", eventoRepository.findAll());
-        return mv;
-    }
+    @Autowired
+    private PassageiroRepository passageiroRepository;
 
     @PostMapping
     public ModelAndView salvar(@Valid @ModelAttribute Viagens viagens, BindingResult result) {
@@ -67,19 +51,6 @@ public class ViagensController {
         return new ModelAndView("redirect:/");
     }
 
-    @GetMapping("/editar/{id}")
-    public ModelAndView editar(@PathVariable Integer id) {
-        Optional<Viagens> viagensOpt = viagensRepository.findById(id);
-
-        if (viagensOpt.isPresent()) {
-            ModelAndView mv = new ModelAndView("viagens/form");
-            mv.addObject("viagem", viagensOpt.get());
-            return mv;
-        }
-
-        return new ModelAndView("redirect:/viagens");
-    }
-
     @PostMapping("/atualizar/{id}")
     public ModelAndView atualizar(@PathVariable Integer id,
                                   @Valid @ModelAttribute Viagens viagens,
@@ -92,26 +63,40 @@ public class ViagensController {
         viagens.setId(id);
         viagensRepository.save(viagens);
 
-        return new ModelAndView("redirect:/viagens");
+        String redirectUrl = "redirect:/";
+        if (viagens.getIdEvento() != null) {
+            redirectUrl += viagens.getIdEvento().getId();
+        }
+        return new ModelAndView(redirectUrl);
     }
 
     @GetMapping("/deletar/{id}")
     public String deletar(@PathVariable Integer id) {
+
+        Viagens viagem = viagensRepository.findById(id).orElseThrow();
+
+        passageiroRepository.deleteAllByIdViagem(id);
+
         viagensRepository.deleteById(id);
-        return "redirect:/viagens";
+
+        String redirectUrl = "redirect:/";
+        if (viagem.getIdEvento() != null) {
+            redirectUrl += viagem.getIdEvento().getId();
+        }
+        return redirectUrl;
     }
 
     @PostMapping("/vincular-veiculo")
     public String vincularVeiculo(@RequestParam Integer idViagem, @RequestParam String idPlaca) {
-        // Busca a viagem e o veículo no banco
+
         Viagens viagem = viagensRepository.findById(idViagem).orElseThrow();
         Veiculo veiculo = veiculoRepository.findById(idPlaca).orElseThrow();
 
-        // Atualiza apenas o veículo
+
         viagem.setIdVeiculo(veiculo.getIdPlaca());
         viagensRepository.save(viagem);
 
-        // Redireciona mantendo o contexto do Evento e da Viagem na URL
+
         String redirectUrl = "redirect:/";
         if (viagem.getIdEvento() != null) {
             redirectUrl += viagem.getIdEvento().getId() + "/" + viagem.getId();

@@ -18,46 +18,15 @@ public class EnderecoController {
     @Autowired
     private EnderecoRepository enderecoRepository;
 
-    // ✅ LISTAR
-    @GetMapping
-    public ModelAndView listar() {
-        ModelAndView mv = new ModelAndView("endereco/lista");
-        mv.addObject("enderecos", enderecoRepository.findAll());
-        return mv;
-    }
-
-    // ✅ FORMULÁRIO DE CRIAÇÃO
-    @GetMapping("/novo")
-    public ModelAndView novo() {
-        ModelAndView mv = new ModelAndView("endereco/form");
-        mv.addObject("endereco", new Endereco());
-        return mv;
-    }
-
     @PostMapping
     public ModelAndView salvar(@Valid @ModelAttribute Endereco endereco, BindingResult result) {
         if (result.hasErrors()) {
-            return new ModelAndView("endereco/form");
+            return new ModelAndView("redirect:/");
         }
         enderecoRepository.save(endereco);
-        return new ModelAndView("redirect:/"); // Volta para o Dashboard principal
+        return new ModelAndView("redirect:/");
     }
 
-    // ✅ EDITAR
-    @GetMapping("/editar/{id}")
-    public ModelAndView editar(@PathVariable Integer id) {
-        Optional<Endereco> enderecoOpt = enderecoRepository.findById(id);
-
-        if (enderecoOpt.isPresent()) {
-            ModelAndView mv = new ModelAndView("endereco/form");
-            mv.addObject("endereco", enderecoOpt.get());
-            return mv;
-        }
-
-        return new ModelAndView("redirect:/enderecos");
-    }
-
-    // ✅ ATUALIZAR
     @PostMapping("/atualizar/{id}")
     public ModelAndView atualizar(@PathVariable Integer id,
                                   @Valid @ModelAttribute Endereco endereco,
@@ -73,7 +42,7 @@ public class EnderecoController {
         return new ModelAndView("redirect:/enderecos");
     }
 
-    // ✅ DELETAR (simples → só redirect)
+
     @GetMapping("/deletar/{id}")
     public String deletar(@PathVariable Integer id) {
         enderecoRepository.deleteById(id);

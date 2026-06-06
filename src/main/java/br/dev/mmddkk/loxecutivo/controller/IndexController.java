@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
@@ -29,10 +30,11 @@ public class IndexController {
     @Autowired
     private PassageiroRepository passageiroRepository;
 
-    @RequestMapping(value = {"/", "/{idEvento:\\d+}", "/{idEvento:\\d+}/{idViagem:\\d+}"})
+    @RequestMapping(value = {"/", "/{idEvento:\\d+}", "/{idEvento:\\d+}/{idViagem:\\d+}", "/{idEvento:\\d+}/{idViagem:\\d+}/{idPassageiro:\\d+}"})
     public ModelAndView index(
             @PathVariable("idEvento") Optional<Integer> idEvento,
-            @PathVariable("idViagem") Optional<Integer> idViagem) {
+            @PathVariable("idViagem") Optional<Integer> idViagem,
+            @PathVariable("idPassageiro") Optional<Integer> idPassageiro) {
 
         ModelAndView mv = new ModelAndView("index");
 
@@ -58,11 +60,19 @@ public class IndexController {
                 });
         }
 
+        if (idPassageiro.isPresent()) {
+            Optional<Passageiro> editarPassageiro = passageiroRepository.findById(idPassageiro.get());
+
+            if (editarPassageiro.isPresent()) {
+                mv.addObject("editarPassageiro", editarPassageiro.get());
+            }
+        }
+
         mv.addObject("novoVeiculo", new Veiculo());
         mv.addObject("novaViagem", new Viagens());
 
         Passageiro pass = new Passageiro();
-        pass.setEmpresa("Nenhuma");
+        pass.setEmpresa("");
         mv.addObject("novoPassageiro", pass);
 
         mv.addObject("novoMotorista", new Motorista());

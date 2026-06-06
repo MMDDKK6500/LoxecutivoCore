@@ -37,7 +37,7 @@ public class Passageiro {
     @Column(name = "rg", nullable = false, length = 9)
     private String rg;
 
-    @Size(max = 11)
+    @Size(max = 11, min=11)
     @NotNull
     @Column(name = "cpf", nullable = false, length = 11)
     private String cpf;
@@ -108,6 +108,24 @@ public class Passageiro {
 
     public void setIdViagem(Viagens idViagem) {
         this.idViagem = idViagem;
+    }
+
+
+    public String getCpfFormatado() {
+
+        if (this.cpf != null && this.cpf.matches("\\d{11}")) {
+            return this.cpf.replaceFirst("(\\d{3})(\\d{3})(\\d{3})(\\d{2})", "$1.$2.$3-$4");
+        }
+        return this.cpf;
+    }
+
+
+    public String getRgFormatado() {
+
+        if (this.rg != null && this.rg.matches("[0-9]{8}[0-9Xx]")) {
+            return this.rg.replaceFirst("(\\d{2})(\\d{3})(\\d{3})([0-9Xx])", "$1.$2.$3-$4").toUpperCase();
+        }
+        return this.rg;
     }
 
 }

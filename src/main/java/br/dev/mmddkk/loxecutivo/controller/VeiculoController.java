@@ -18,25 +18,9 @@ public class VeiculoController {
     @Autowired
     private VeiculoRepository veiculoRepository;
 
-    // ✅ LISTAR
-    @GetMapping
-    public ModelAndView listar() {
-        ModelAndView mv = new ModelAndView("veiculo/lista");
-        mv.addObject("veiculos", veiculoRepository.findAll());
-        return mv;
-    }
-
-    // ✅ FORMULÁRIO DE CRIAÇÃO
-    @GetMapping("/novo")
-    public ModelAndView novo() {
-        ModelAndView mv = new ModelAndView("veiculo/form");
-        mv.addObject("veiculo", new Veiculo());
-        return mv;
-    }
-
-    // ✅ SALVAR NOVO
-    @PostMapping
+    @PostMapping("/{eventoId}")
     public ModelAndView salvar(@Valid @ModelAttribute Veiculo veiculo,
+                               @PathVariable Integer eventoId,
                                BindingResult result) {
 
         if (result.hasErrors()) {
@@ -44,24 +28,10 @@ public class VeiculoController {
         }
 
         veiculoRepository.save(veiculo);
-        return new ModelAndView("redirect:/");
+        return new ModelAndView("redirect:/" + eventoId + "?modal=modalViagem");
     }
 
-    // ✅ EDITAR
-    @GetMapping("/editar/{id}")
-    public ModelAndView editar(@PathVariable String id) {
-        Optional<Veiculo> veiculoOpt = veiculoRepository.findById(id);
 
-        if (veiculoOpt.isPresent()) {
-            ModelAndView mv = new ModelAndView("veiculo/form");
-            mv.addObject("veiculo", veiculoOpt.get());
-            return mv;
-        }
-
-        return new ModelAndView("redirect:/");
-    }
-
-    // ✅ ATUALIZAR
     @PostMapping("/atualizar/{id}")
     public ModelAndView atualizar(@PathVariable String id,
                                   @Valid @ModelAttribute Veiculo veiculo,
@@ -77,7 +47,7 @@ public class VeiculoController {
         return new ModelAndView("redirect:/");
     }
 
-    // ✅ DELETAR (simples → só redirect)
+
     @GetMapping("/deletar/{id}")
     public String deletar(@PathVariable String id) {
         veiculoRepository.deleteById(id);
