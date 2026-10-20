@@ -3,6 +3,8 @@ package br.dev.mmddkk.loxecutivo.controller;
 import br.dev.mmddkk.loxecutivo.model.Evento;
 import br.dev.mmddkk.loxecutivo.repository.EventoRepository;
 import br.dev.mmddkk.loxecutivo.repository.EnderecoRepository;
+import br.dev.mmddkk.loxecutivo.repository.PassageiroRepository;
+import br.dev.mmddkk.loxecutivo.repository.ViagensRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +21,12 @@ public class EventoController {
 
     @Autowired
     private EnderecoRepository enderecoRepository;
+
+    @Autowired
+    private ViagensRepository viagensRepository;
+
+    @Autowired
+    private PassageiroRepository passageiroRepository;
 
     @GetMapping
     public Iterable<Evento> listarTodos() {
@@ -49,8 +57,15 @@ public class EventoController {
         return evento;
     }
 
+    @Transactional
     @DeleteMapping("/{id}")
     public void deletar(@PathVariable Integer id) {
-        eventoRepository.deleteById(id);
+        Evento evento = eventoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento não encontrado."));
+        viagensRepository.findByIdEvento(evento).forEach(viagem -> {
+            passageiroRepository.deleteAllByIdViagem(viagem.getId());
+            viagensRepository.deleteById(viagem.getId());
+        });
+        eventoRepository.delete(evento);
     }
 }
