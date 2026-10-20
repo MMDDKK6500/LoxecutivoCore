@@ -1,7 +1,9 @@
 package br.dev.mmddkk.loxecutivo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Entity
@@ -13,22 +15,26 @@ public class Motorista {
     private Integer id;
 
     @Size(max = 30)
-    @NotNull
+    @NotBlank
+    @Pattern(regexp = "[\\p{L}][\\p{L} '-]*")
     @Column(name = "nome", nullable = false, length = 30)
     private String nome;
 
     @Size(max = 60)
-    @NotNull
+    @NotBlank
+    @Pattern(regexp = "[\\p{L}][\\p{L} '-]*")
     @Column(name = "sobrenome", nullable = false, length = 60)
     private String sobrenome;
 
     @Size(max = 9)
-    @NotNull
+    @NotBlank
+    @Pattern(regexp = "\\d{9}")
     @Column(name = "rg", nullable = false, length = 9)
     private String rg;
 
     @Size(max = 11)
-    @NotNull
+    @NotBlank
+    @Pattern(regexp = "\\d{11}")
     @Column(name = "cpf", nullable = false, length = 11)
     private String cpf;
 

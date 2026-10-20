@@ -1,7 +1,10 @@
 package br.dev.mmddkk.loxecutivo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
@@ -15,25 +18,27 @@ public class Endereco implements Serializable {
     private Integer id;
 
     @Size(max = 50)
-    @NotNull
+    @NotBlank
     @Column(name = "rua", nullable = false, length = 50)
     private String rua;
 
     @NotNull
+    @Min(1)
     @Column(name = "numero", nullable = false)
     private Integer numero;
 
     @Size(max = 20)
-    @NotNull
+    @NotBlank
     @Column(name = "bairro", nullable = false, length = 20)
     private String bairro;
 
     @Size(max = 20)
-    @NotNull
+    @NotBlank
     @Column(name = "cidade", nullable = false, length = 20)
     private String cidade;
 
-    @NotNull
+    @NotBlank
+    @Pattern(regexp = "[A-Za-zÀ-ÿ]{2}")
     @Lob
     @Column(name = "uf", nullable = false)
     private String uf;

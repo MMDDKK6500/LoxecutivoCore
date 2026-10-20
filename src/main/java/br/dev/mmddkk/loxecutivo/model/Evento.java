@@ -1,6 +1,7 @@
 package br.dev.mmddkk.loxecutivo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -13,7 +14,7 @@ public class Evento {
     private Integer id;
 
     @Size(max = 40)
-    @NotNull
+    @NotBlank
     @Column(name = "nome", nullable = false, length = 40)
     private String nome;
 

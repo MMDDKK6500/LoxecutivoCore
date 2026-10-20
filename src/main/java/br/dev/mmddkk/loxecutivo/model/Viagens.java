@@ -1,7 +1,9 @@
 package br.dev.mmddkk.loxecutivo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Entity
@@ -28,7 +30,8 @@ public class Viagens {
     private Motorista idMotorista;
 
     @Size(max = 7)
-    @NotNull
+    @NotBlank
+    @Pattern(regexp = "[A-Z0-9-]{1,7}")
     @Column(name = "id_veiculo", nullable = false, length = 7)
     private String idVeiculo;
 
