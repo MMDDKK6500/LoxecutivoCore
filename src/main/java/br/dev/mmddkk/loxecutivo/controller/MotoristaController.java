@@ -4,57 +4,33 @@ import br.dev.mmddkk.loxecutivo.model.Motorista;
 import br.dev.mmddkk.loxecutivo.repository.MotoristaRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Optional;
-
-@Controller
+@RestController
 @RequestMapping("/motoristas")
 public class MotoristaController {
 
     @Autowired
     private MotoristaRepository motoristaRepository;
 
-
-    @PostMapping("/{eventoId}")
-    public String salvar(@Valid @ModelAttribute Motorista motorista,
-                               @PathVariable Integer eventoId,
-                               BindingResult result,
-                               RedirectAttributes attributes) {
-
-        if (result.hasErrors()) {
-            return "redirect:/" + eventoId;
-        }
-
-        motoristaRepository.save(motorista);
-
-        return "redirect:/" + eventoId + "?modal=modalViagem";
+    @GetMapping
+    public Iterable<Motorista> listarTodos() {
+        return motoristaRepository.findAll();
     }
 
+    @PostMapping
+    public Motorista salvar(@Valid @RequestBody Motorista motorista) {
+        return motoristaRepository.save(motorista);
+    }
 
-    @PostMapping("/atualizar/{id}")
-    public ModelAndView atualizar(@PathVariable Integer id,
-                                  @Valid @ModelAttribute Motorista motorista,
-                                  BindingResult result) {
-
-        if (result.hasErrors()) {
-            return new ModelAndView("motorista/form");
-        }
-
+    @PutMapping("/{id}")
+    public Motorista atualizar(@PathVariable Integer id, @Valid @RequestBody Motorista motorista) {
         motorista.setId(id);
-        motoristaRepository.save(motorista);
-
-        return new ModelAndView("redirect:/motoristas");
+        return motoristaRepository.save(motorista);
     }
 
-
-    @GetMapping("/deletar/{id}")
-    public String deletar(@PathVariable Integer id) {
+    @DeleteMapping("/{id}")
+    public void deletar(@PathVariable Integer id) {
         motoristaRepository.deleteById(id);
-        return "redirect:/motoristas";
     }
 }

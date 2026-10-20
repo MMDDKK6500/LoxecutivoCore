@@ -4,48 +4,33 @@ import br.dev.mmddkk.loxecutivo.model.Endereco;
 import br.dev.mmddkk.loxecutivo.repository.EnderecoRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
-import java.util.Optional;
-
-@Controller
-@RequestMapping("/enderecos")
+@RestController
+@RequestMapping("/api/enderecos")
 public class EnderecoController {
 
     @Autowired
     private EnderecoRepository enderecoRepository;
 
+    @GetMapping
+    public Iterable<Endereco> listarTodos() {
+        return enderecoRepository.findAll();
+    }
+
     @PostMapping
-    public ModelAndView salvar(@Valid @ModelAttribute Endereco endereco, BindingResult result) {
-        if (result.hasErrors()) {
-            return new ModelAndView("redirect:/");
-        }
-        enderecoRepository.save(endereco);
-        return new ModelAndView("redirect:/");
+    public Endereco salvar(@Valid @RequestBody Endereco endereco) {
+        return enderecoRepository.save(endereco);
     }
 
-    @PostMapping("/atualizar/{id}")
-    public ModelAndView atualizar(@PathVariable Integer id,
-                                  @Valid @ModelAttribute Endereco endereco,
-                                  BindingResult result) {
-
-        if (result.hasErrors()) {
-            return new ModelAndView("endereco/form");
-        }
-
+    @PutMapping("/{id}")
+    public Endereco atualizar(@PathVariable Integer id, @Valid @RequestBody Endereco endereco) {
         endereco.setId(id);
-        enderecoRepository.save(endereco);
-
-        return new ModelAndView("redirect:/enderecos");
+        return enderecoRepository.save(endereco);
     }
 
-
-    @GetMapping("/deletar/{id}")
-    public String deletar(@PathVariable Integer id) {
+    @DeleteMapping("/{id}")
+    public void deletar(@PathVariable Integer id) {
         enderecoRepository.deleteById(id);
-        return "redirect:/enderecos";
     }
 }
