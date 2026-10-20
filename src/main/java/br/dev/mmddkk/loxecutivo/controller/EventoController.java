@@ -33,6 +33,12 @@ public class EventoController {
         return eventoRepository.findAll();
     }
 
+    @GetMapping("/{id}")
+    public Evento buscarPorId(@PathVariable Integer id) {
+        return eventoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento não encontrado."));
+    }
+
     @PostMapping
     @Transactional
     public Evento salvar(@Valid @RequestBody Evento evento) {
