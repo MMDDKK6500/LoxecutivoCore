@@ -1,8 +1,9 @@
 package br.dev.mmddkk.loxecutivo;
 
 import org.springframework.http.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -16,7 +17,14 @@ import java.io.IOException;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+    private final String authServiceUrl;
+
+    public JwtAuthFilter(RestTemplate restTemplate,
+                         @Value("${auth.service.url:http://127.0.0.1:8082/validar}") String authServiceUrl) {
+        this.restTemplate = restTemplate;
+        this.authServiceUrl = authServiceUrl;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -32,7 +40,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // Pega o token do cabeçalho da requisição
         String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.matches("(?i)^Bearer\\s+\\S+$")) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Acesso negado: Token ausente.");
             return;
@@ -44,8 +52,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             headers.set("Authorization", authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            // Chama a API do Node.js na porta 8082
-            String authServiceUrl = "http://localhost:8082/validar";
             ResponseEntity<String> nodeResponse = restTemplate.exchange(
                     authServiceUrl,
                     HttpMethod.POST,
@@ -53,14 +59,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     String.class
             );
 
-            // Se o Node.js responder 200 OK, a requisição segue para o Controller do Spring
-            if (nodeResponse.getStatusCode() == HttpStatus.OK) {
+            // Only a successful validation response may reach a controller.
+            if (nodeResponse.getStatusCode().is2xxSuccessful()) {
                 filterChain.doFilter(request, response);
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Acesso negado: Token inválido ou expirado.");
             }
 
-        } catch (HttpClientErrorException e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Acesso negado: Token invalido ou expirado.");
+        } catch (HttpStatusCodeException e) {
+            if (e.getStatusCode().value() == HttpServletResponse.SC_UNAUTHORIZED) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Acesso negado: Token inválido ou expirado.");
+            } else {
+                response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+                response.getWriter().write("Serviço de autenticação indisponível.");
+            }
         } catch (ResourceAccessException e) {
             response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             response.getWriter().write("Servico de autenticacao indisponivel.");
