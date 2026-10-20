@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDateTime;
 import jakarta.validation.constraints.Size;
 
 @Entity
@@ -38,6 +40,10 @@ public class Viagens {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_evento")
     private Evento idEvento;
+
+    @Column(name = "data_hora")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime dataHora;
 
     public Integer getId() {
         return id;
@@ -85,6 +91,14 @@ public class Viagens {
 
     public void setIdEvento(Evento idEvento) {
         this.idEvento = idEvento;
+    }
+
+    public LocalDateTime getDataHora() {
+        return dataHora;
+    }
+
+    public void setDataHora(LocalDateTime dataHora) {
+        this.dataHora = dataHora;
     }
 
 }
