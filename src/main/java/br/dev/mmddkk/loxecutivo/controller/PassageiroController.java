@@ -18,6 +18,11 @@ public class PassageiroController {
         return passageiroRepository.findAll();
     }
 
+    @GetMapping("/viagem/{viagemId}")
+    public Iterable<Passageiro> listarPorViagem(@PathVariable Integer viagemId) {
+        return passageiroRepository.findAllByViagemId(viagemId);
+    }
+
     @PostMapping
     public Passageiro salvar(@Valid @RequestBody Passageiro passageiro) {
         return passageiroRepository.save(passageiro);

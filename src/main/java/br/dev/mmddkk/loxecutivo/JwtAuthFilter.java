@@ -3,6 +3,7 @@ package br.dev.mmddkk.loxecutivo;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -44,7 +45,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             // Chama a API do Node.js na porta 8082
-            String authServiceUrl = "http://localhost:8082/auth/validar";
+            String authServiceUrl = "http://localhost:8082/validar";
             ResponseEntity<String> nodeResponse = restTemplate.exchange(
                     authServiceUrl,
                     HttpMethod.POST,
@@ -58,9 +59,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
 
         } catch (HttpClientErrorException e) {
-            // Se o Node.js responder 401 Unauthorized, bloqueia no Spring Boot
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Acesso negado: Token invalido ou expirado.");
+        } catch (ResourceAccessException e) {
+            response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            response.getWriter().write("Servico de autenticacao indisponivel.");
         }
     }
 }

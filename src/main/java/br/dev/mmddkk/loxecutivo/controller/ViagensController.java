@@ -7,6 +7,7 @@ import br.dev.mmddkk.loxecutivo.repository.PassageiroRepository;
 import br.dev.mmddkk.loxecutivo.repository.ViagensRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -56,6 +57,7 @@ public class ViagensController {
         return viagensRepository.save(viagem);
     }
 
+    @Transactional
     @DeleteMapping("/{id}")
     public void deletar(@PathVariable Integer id) {
         passageiroRepository.deleteAllByIdViagem(id);

@@ -14,6 +14,9 @@ public interface PassageiroRepository extends CrudRepository<Passageiro, Integer
 
     List<Passageiro> findByIdViagem(Viagens viagem);
 
+    @Query("SELECT p FROM Passageiro p WHERE p.idViagem.id = :viagemId")
+    List<Passageiro> findAllByViagemId(@Param("viagemId") Integer viagemId);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM Passageiro p WHERE p.idViagem.id = :viagemId")
