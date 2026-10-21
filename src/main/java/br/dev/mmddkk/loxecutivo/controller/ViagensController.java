@@ -5,6 +5,7 @@ import br.dev.mmddkk.loxecutivo.model.Evento;
 import br.dev.mmddkk.loxecutivo.model.Motorista;
 import br.dev.mmddkk.loxecutivo.model.Veiculo;
 import br.dev.mmddkk.loxecutivo.model.Viagens;
+import br.dev.mmddkk.loxecutivo.model.ViagemStatus;
 import br.dev.mmddkk.loxecutivo.repository.EnderecoRepository;
 import br.dev.mmddkk.loxecutivo.repository.EventoRepository;
 import br.dev.mmddkk.loxecutivo.repository.MotoristaRepository;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 import java.util.List;
 
@@ -74,6 +76,28 @@ public class ViagensController {
     public Viagens atualizar(@PathVariable Integer id, @Valid @RequestBody Viagens viagem) {
         viagem.setId(id);
         return viagensRepository.save(resolverAssociacoes(viagem));
+    }
+
+    @Transactional
+    @PatchMapping("/{id}/status")
+    public Viagens atualizarStatus(@PathVariable Integer id, @RequestBody Map<String, String> body) {
+        String statusValue = body == null ? null : body.get("status");
+        final ViagemStatus novoStatus;
+        try {
+            novoStatus = ViagemStatus.valueOf(statusValue == null ? "" : statusValue);
+        } catch (IllegalArgumentException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status de viagem inválido.");
+        }
+
+        Viagens viagem = viagensRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Viagem não encontrada."));
+        ViagemStatus statusAtual = viagem.getStatus() == null ? ViagemStatus.AGENDADA : viagem.getStatus();
+        if (!statusAtual.permiteTransicaoPara(novoStatus)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Não é permitido alterar o status desta viagem diretamente.");
+        }
+
+        viagem.setStatus(novoStatus);
+        return viagensRepository.save(viagem);
     }
 
     private Viagens resolverAssociacoes(Viagens viagem) {

@@ -45,6 +45,10 @@ public class Viagens {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dataHora;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20, columnDefinition = "VARCHAR(20) NOT NULL DEFAULT 'AGENDADA'")
+    private ViagemStatus status = ViagemStatus.AGENDADA;
+
     public Integer getId() {
         return id;
     }
@@ -99,6 +103,14 @@ public class Viagens {
 
     public void setDataHora(LocalDateTime dataHora) {
         this.dataHora = dataHora;
+    }
+
+    public ViagemStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ViagemStatus status) {
+        this.status = status;
     }
 
 }
